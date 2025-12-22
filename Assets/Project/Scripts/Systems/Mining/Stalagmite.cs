@@ -2,36 +2,38 @@ using UnityEngine;
 
 public class Stalagmite : MonoBehaviour
 {
-    [Header("HP")]
+    [Header("Health")]
     [SerializeField] private int maxHP = 60;
-    [SerializeField] private GameObject dropPrefab;
     private int currentHP;
 
-    [Header("Sprites")]
-    [SerializeField] private Sprite fullSprite;   // 60
-    [SerializeField] private Sprite sprite45;     // 45
-    [SerializeField] private Sprite sprite30;     // 30
-    [SerializeField] private Sprite sprite15;     // 15
-
-    private SpriteRenderer sr;
+    [Header("Drop")]
+    [SerializeField] private GameObject dropPrefab;
+    [SerializeField] private int dropAmount = 1;
 
     private void Awake()
     {
-        sr = GetComponent<SpriteRenderer>();
         currentHP = maxHP;
-        UpdateSprite();
     }
 
-    public void Mine(int pickaxeTier)
+    // 🔹 PlayerMovement burayı çağırıyor
+    public void Mine(int damage)
     {
-        CameraShake.Instance?.Shake(0.08f, 0.03f);
-        
-        int damage = GetDamageByTier(pickaxeTier);
+        TakeDamage(damage);
+    }
+
+    // ==========================
+    // DAMAGE & SHAKE
+    // ==========================
+    private void TakeDamage(int damage)
+    {
         currentHP -= damage;
+        Debug.Log($"Stalagmite hit! HP: {currentHP}");
 
-        Debug.Log($"Stalagmite hit! Tier:{pickaxeTier} Damage:{damage} HP:{currentHP}");
-
-        UpdateSprite();
+        // ✅ CAMERA SHAKE BURADA
+        if (CameraShake.Instance != null)
+        {
+            CameraShake.Instance.Shake();
+        }
 
         if (currentHP <= 0)
         {
@@ -39,33 +41,25 @@ public class Stalagmite : MonoBehaviour
         }
     }
 
-    private int GetDamageByTier(int tier)
-    {
-        switch (tier)
-        {
-            case 1: return 15; // 4 hit
-            case 2: return 30; // 2 hit
-            case 3: return 60; // 1–2 hit
-            case 4: return 999; // instant
-            default: return 15;
-        }
-    }
-
-    private void UpdateSprite()
-    {
-        if (currentHP > 45)
-            sr.sprite = fullSprite;
-        else if (currentHP > 30)
-            sr.sprite = sprite45;
-        else if (currentHP > 15)
-            sr.sprite = sprite30;
-        else if (currentHP > 0)
-            sr.sprite = sprite15;
-    }
-
+    // ==========================
+    // BREAK & DROP
+    // ==========================
     private void Break()
-{
-    Instantiate(dropPrefab, transform.position, Quaternion.identity);
-    Destroy(gameObject);
-}
+    {
+        Debug.Log("Stalagmite broken");
+
+        if (dropPrefab != null)
+        {
+            for (int i = 0; i < dropAmount; i++)
+            {
+                Instantiate(
+                    dropPrefab,
+                    transform.position + Random.insideUnitSphere * 0.2f,
+                    Quaternion.identity
+                );
+            }
+        }
+
+        Destroy(gameObject);
+    }
 }

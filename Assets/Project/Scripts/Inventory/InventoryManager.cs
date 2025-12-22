@@ -5,10 +5,9 @@ using UnityEngine;
 public class InventoryManager : MonoBehaviour
 {
     public static InventoryManager Instance;
-
     public static event Action OnInventoryChanged;
 
-    private Dictionary<string, int> items = new Dictionary<string, int>();
+    private Dictionary<ItemSO, int> items = new();
 
     private void Awake()
     {
@@ -22,20 +21,22 @@ public class InventoryManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void AddItem(string itemId, int amount)
+    public void AddItem(ItemSO item, int amount)
     {
-        if (items.ContainsKey(itemId))
-            items[itemId] += amount;
+        if (item == null) return;
+
+        if (items.ContainsKey(item))
+            items[item] += amount;
         else
-            items[itemId] = amount;
+            items[item] = amount;
 
-        Debug.Log($"Inventory → {itemId}: {items[itemId]}");
+        Debug.Log($"Inventory → {item.itemName}: {items[item]}");
 
-        OnInventoryChanged?.Invoke(); // 🔥 KRİTİK
+        OnInventoryChanged?.Invoke();
     }
 
-    public int GetItemCount(string itemId)
+    public int GetItemCount(ItemSO item)
     {
-        return items.TryGetValue(itemId, out int count) ? count : 0;
+        return items.TryGetValue(item, out int count) ? count : 0;
     }
 }

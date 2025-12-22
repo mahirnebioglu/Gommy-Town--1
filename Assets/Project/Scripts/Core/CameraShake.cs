@@ -1,41 +1,56 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 public class CameraShake : MonoBehaviour
 {
     public static CameraShake Instance;
 
-    private Vector3 originalPosition;
+    [Header("Shake Settings")]
+    [SerializeField] private float defaultDuration = 0.08f;
+    [SerializeField] private float defaultStrength = 0.12f;
+
+    private Vector3 originalLocalPos;
+    private Coroutine shakeRoutine;
 
     private void Awake()
     {
-        if (Instance == null)
-            Instance = this;
-        else
+        if (Instance != null && Instance != this)
+        {
             Destroy(gameObject);
+            return;
+        }
 
-        originalPosition = transform.localPosition;
+        Instance = this;
+        originalLocalPos = transform.localPosition;
+    }
+
+    public void Shake()
+    {
+        Shake(defaultDuration, defaultStrength);
     }
 
     public void Shake(float duration, float strength)
     {
-        StopAllCoroutines();
-        StartCoroutine(ShakeRoutine(duration, strength));
+        if (shakeRoutine != null)
+            StopCoroutine(shakeRoutine);
+
+        shakeRoutine = StartCoroutine(ShakeCoroutine(duration, strength));
     }
 
-    private IEnumerator ShakeRoutine(float duration, float strength)
+    private IEnumerator ShakeCoroutine(float duration, float strength)
     {
         float elapsed = 0f;
 
         while (elapsed < duration)
         {
-            Vector2 randomOffset = Random.insideUnitCircle * strength;
-            transform.localPosition = originalPosition + new Vector3(randomOffset.x, randomOffset.y, 0f);
+            Vector2 offset = Random.insideUnitCircle * strength;
+            transform.localPosition = originalLocalPos + new Vector3(offset.x, offset.y, 0f);
 
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        transform.localPosition = originalPosition;
+        transform.localPosition = originalLocalPos;
+        shakeRoutine = null;
     }
 }

@@ -9,12 +9,12 @@ public class PlayerMovement : MonoBehaviour
     [Header("Mining")]
     [SerializeField] private Vector2 miningOffset = new Vector2(0f, 0.8f);
     [SerializeField] private float miningRadius = 1.2f;
-
-    private Animator animator;
+    [SerializeField] private int miningDamage = 15; // ✅ DAMAGE BURADA
 
     private Rigidbody2D rb;
     private Vector2 movement;
     private PlayerStats playerStats;
+    private Animator animator;
 
     private void Awake()
     {
@@ -40,17 +40,6 @@ public class PlayerMovement : MonoBehaviour
         movement.Normalize();
 
         // --------------------
-        // TEST: SPACE → STAMINA
-        // --------------------
-        if (Keyboard.current.spaceKey.wasPressedThisFrame)
-        {
-            if (!playerStats.ConsumeStamina(10))
-            {
-                Debug.Log("Not enough stamina!");
-            }
-        }
-
-        // --------------------
         // MINING (E KEY)
         // --------------------
         if (Keyboard.current.eKey.wasPressedThisFrame)
@@ -68,35 +57,34 @@ public class PlayerMovement : MonoBehaviour
     // MINING LOGIC
     // ==========================
     private void TryMine()
-{
-    animator.SetTrigger("Mine");
-
-    if (!playerStats.ConsumeStamina(2))
     {
-        Debug.Log("Not enough stamina to mine!");
-        return;
-    }
-
-    Vector2 miningPoint = (Vector2)transform.position + miningOffset;
-
-    Collider2D[] hits = Physics2D.OverlapCircleAll(
-        miningPoint,
-        miningRadius,
-        LayerMask.GetMask("Mineable")
-    );
-
-    foreach (Collider2D hit in hits)
-    {
-        Stalagmite stalagmite = hit.GetComponent<Stalagmite>();
-        if (stalagmite != null)
+        if (!playerStats.ConsumeStamina(2))
         {
-            int pickaxeTier = 1; // şimdilik sabit
-            stalagmite.Mine(pickaxeTier);
-            break;
+            Debug.Log("Not enough stamina to mine!");
+            return;
+        }
+
+        animator.SetTrigger("Mine");
+
+        Vector2 miningPoint = (Vector2)transform.position + miningOffset;
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(
+            miningPoint,
+            miningRadius,
+            LayerMask.GetMask("Mineable")
+        );
+
+        foreach (Collider2D hit in hits)
+        {
+            Stalagmite stalagmite = hit.GetComponent<Stalagmite>();
+            if (stalagmite != null)
+            {
+                // ✅ DOĞRU ÇAĞRI
+                stalagmite.Mine(miningDamage);
+                break;
+            }
         }
     }
-}
-
 
     // ==========================
     // DEBUG GIZMOS
