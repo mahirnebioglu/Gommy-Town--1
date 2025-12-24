@@ -23,6 +23,8 @@ public class PlayerMovement : MonoBehaviour
     private void OnEnable()
     {
         inputActions.Enable();
+        // Oyun etkinleştiğinde de hareketi sıfırla
+        ResetMovement();
     }
 
     private void OnDisable()
@@ -30,8 +32,32 @@ public class PlayerMovement : MonoBehaviour
         inputActions.Disable();
     }
 
-    private void FixedUpdate()
+    private void Start()
     {
-        rb.linearVelocity = moveInput * moveSpeed;
+        // Oyun başında hareketi sıfırla
+        ResetMovement();
     }
+
+    private void ResetMovement()
+    {
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+        }
+    }
+
+    private void FixedUpdate()
+{
+    // Dead zone – mikro inputları yok et 
+    if (moveInput.sqrMagnitude < 0.01f)
+    {
+        rb.linearVelocity = Vector2.zero;
+        return;
+    }
+
+    // Normalize ederek sabit hız sağla
+    Vector2 move = moveInput.normalized * moveSpeed;
+    rb.linearVelocity = move;
+}
 }
