@@ -1,31 +1,25 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class InventorySlotUI : MonoBehaviour
 {
     [SerializeField] private ItemSO item;
-    [SerializeField] private Image icon;
-    [SerializeField] private TextMeshProUGUI countText;
+    [SerializeField] private TMP_Text countText;
 
     private void OnEnable()
     {
-        InventoryManager.OnInventoryChanged += Refresh;
-        Refresh();
+        InventoryManager.Instance.OnInventoryChanged += UpdateSlot;
+        UpdateSlot();
     }
 
     private void OnDisable()
     {
-        InventoryManager.OnInventoryChanged -= Refresh;
+        InventoryManager.Instance.OnInventoryChanged -= UpdateSlot;
     }
 
-    private void Refresh()
+    private void UpdateSlot()
     {
-        if (item == null) return;
-
         int count = InventoryManager.Instance.GetItemCount(item);
-
-        icon.sprite = item.icon;
         countText.text = count > 0 ? count.ToString() : "0";
     }
 }
